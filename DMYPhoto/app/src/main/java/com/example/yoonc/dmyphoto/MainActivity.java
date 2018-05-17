@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final String LOGTAG = "MAINACTIVITY";
     private static Context sContext;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_CODE = 1;
-    public static DMY currDMY = DMY.DAILY;
+    public static DMY currDMY = DMY.YEARLY;
     public static FilesInformations fi;
     public static ScrollView scrollView;
     public static int displayWidthSize;
@@ -91,17 +91,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             gridView.addHeaderView(headerView);
 
-            //터치 이벤트 설정
-            /*
-            gridView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    setPinchInOutTouch(motionEvent);
-                    return view.onTouchEvent(motionEvent);
-                }
-            });
-            */
-
             //adapter - gridview 바인딩
             ImageAdapter adapter = new ImageAdapter(this);
             if(currDMY == DMY.DAILY) adapter.getIteratorFromFI(key,fi.groupingResultDaily.get(key));
@@ -124,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             Log.d(LOGTAG,"totalheight = " + totalheight);
 
             //scrollview안에 있는 LinearLayout에 gridView 넣기
-
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     totalheight);
@@ -179,7 +167,22 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     /* About Pinch in out */
 
     public void setZoomIn(){
-        Log.d("zoomout",currDMY.toString());
+        fi.setIterator();
+        switch (currDMY){
+            case YEARLY: break;
+            case MONTHLY:
+                currDMY = DMY.YEARLY;
+                linearLayout.removeAllViews();
+                setScrollViewGridView();
+                break;
+            case DAILY:
+                currDMY = DMY.MONTHLY;
+                linearLayout.removeAllViews();
+                setScrollViewGridView();
+                break;
+        }
+    }
+    public void setZoomOut(){
         fi.setIterator();
         switch (currDMY) {
             case DAILY:
@@ -195,25 +198,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 setScrollViewGridView();
                 break;
         }
-        Log.d("zoomout",currDMY.toString());
-    }
-    public void setZoomOut(){
-        Log.d("zoomout",currDMY.toString());
-        fi.setIterator();
-        switch (currDMY){
-            case YEARLY: break;
-            case MONTHLY:
-                currDMY = DMY.YEARLY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
-                break;
-            case DAILY:
-                currDMY = DMY.MONTHLY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
-                break;
-        }
-        Log.d("zoomout",currDMY.toString());
     }
 
     //드래그 모드인지 핀치줌 모드인지 구분

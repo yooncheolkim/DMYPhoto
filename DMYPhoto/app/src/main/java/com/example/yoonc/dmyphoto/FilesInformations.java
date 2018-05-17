@@ -6,6 +6,11 @@ import android.os.Environment;
 import android.support.media.ExifInterface;
 import android.util.Log;
 
+import com.drew.imaging.jpeg.JpegMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifImageDirectory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -105,7 +111,7 @@ public class FilesInformations {
                 Date date = new Date(exifInterface.getDateTime());
                 FileInformations FI = new FileInformations(uri,date);
                 filesInformations.add(FI);
-
+                in.close();
             }
             catch (FileNotFoundException e){
                 Log.d(LOGTAG,"FIle not found exception!");}
@@ -168,6 +174,34 @@ public class FilesInformations {
         iteratormonthlyKeys = tm.keySet().iterator();
         tm = new TreeMap<>(groupingResultYearly);
         iteratoryearlyKeys = tm.keySet().iterator();
+    }
+
+
+    private Date extractExifDateTime(String imagePath) {
+        Log.d("exif", "Attempting to extract EXIF date/time from image at " + imagePath);
+        Date datetime = new Date(0); // or initialize to null, if you prefer
+        try {
+            Metadata metadata = JpegMetadataReader.readMetadata(new File(imagePath));
+            // these are listed in order of preference
+            int[] datetimeTags = new int[] { ExifImageDirectory.TAG_DATETIME_ORIGINAL,
+                    ExifImageDirectory.TAG_DATETIME,
+                    ExifImageDirectory.TAG_DATETIME_DIGITIZED };
+
+            for (Directory directory : metadata.getDirectories()) {
+                for (int tag : datetimeTags) {
+                    if (directory.containsTag(tag)) {
+                        Log.d("exif", "Using tag " + directory.getTagName(tag) + " for timestamp");
+                        SimpleDateFormat exifDatetimeFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.getDefault());
+                        datetime = exifDatetimeFormat.parse(directory.getString(tag));
+
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w("exif", "Unable to extract EXIF metadata from image at " + imagePath, e);
+        }
+        return datetime;
     }
 
 }

@@ -1,11 +1,15 @@
 package com.example.yoonc.dmyphoto;
 
 import android.app.Activity;
+import android.app.VoiceInteractor;
 import android.content.ContentUris;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.media.ExifInterface;
 import android.util.DisplayMetrics;
@@ -21,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.MemoryCategory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,6 +58,7 @@ public class ImageAdapter extends BaseAdapter {
     String header;
     //날짜 이미지의 uri들
     List<Uri> uris = new ArrayList<>();
+
     int itemWidth;
 
 
@@ -75,25 +81,26 @@ public class ImageAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView;
-        if (convertView == null) {
-            imageView = new ImageView(mContext);
+        ViewHolder holder;
+        if(convertView == null){
+            holder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(mContext);
+            convertView = inflater.inflate(R.layout.image_holder,parent,false);
+            holder.item_image = (ImageView)convertView.findViewById(R.id.iv);
             GridViewWithHeaderAndFooter.LayoutParams params = new GridViewWithHeaderAndFooter.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-            imageView.setLayoutParams(params);
-            imageView.setAdjustViewBounds(true);
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(1,1,1,1);
-
-            //convertView = new ImageView(mContext);
+            convertView.setLayoutParams(params);
+            convertView.setPadding(1,1,1,1);
+            LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            holder.item_image.setLayoutParams(params1);
+            holder.item_image.setAdjustViewBounds(true);
+            holder.item_image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            convertView.setTag(holder);
+        }else{
+            holder = (ViewHolder) convertView.getTag();
         }
-        else{
-            imageView = (ImageView)convertView;
-        }
-        //Glide.with(mContext).load(uris.get(position)).override(itemWidth,itemWidth).into((ImageView)convertView);
-        Glide.with(mContext).load(uris.get(position)).override(50,50).into(imageView);
-
-        //return convertView;
-        return imageView;
+        Glide.get(mContext).setMemoryCategory(MemoryCategory.HIGH);
+        Glide.with(mContext).load(uris.get(position)).override(300,300).into(holder.item_image);
+        return convertView;
     }
 
     public void getIteratorFromFI(String s, List<Uri> u){
@@ -108,5 +115,9 @@ public class ImageAdapter extends BaseAdapter {
             itemWidth = (deviceWidth - 6) / 5;
         else if(MainActivity.currDMY == DMY.YEARLY)
             itemWidth = (deviceWidth- 8) / 7;
+    }
+
+    private class ViewHolder{
+        public ImageView item_image;
     }
 }
