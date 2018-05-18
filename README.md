@@ -1,4 +1,4 @@
-# DMYPhto
+# DMYPhoto
 
 - ExifInterface를 이용한 년,월,일 그룹핑 목록 만들기
 - GridView(ViewHolder)
