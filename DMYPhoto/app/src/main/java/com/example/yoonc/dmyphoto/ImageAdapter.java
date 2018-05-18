@@ -70,8 +70,8 @@ public class ImageAdapter extends BaseAdapter {
     public int getCount() {return  uris.size();}
 
     @Override
-    public Object getItem(int i) {
-       return null;
+    public Uri getItem(int i) {
+       return uris.get(i);
     }
 
     @Override
@@ -84,11 +84,15 @@ public class ImageAdapter extends BaseAdapter {
         ViewHolder holder;
         if(convertView == null){
             holder = new ViewHolder();
+
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(R.layout.image_holder,parent,false);
+
             holder.item_image = (ImageView)convertView.findViewById(R.id.iv);
+
             GridViewWithHeaderAndFooter.LayoutParams params = new GridViewWithHeaderAndFooter.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
             convertView.setLayoutParams(params);
+
             convertView.setPadding(1,1,1,1);
             LinearLayout.LayoutParams params1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
             holder.item_image.setLayoutParams(params1);
@@ -98,8 +102,10 @@ public class ImageAdapter extends BaseAdapter {
         }else{
             holder = (ViewHolder) convertView.getTag();
         }
-        Glide.get(mContext).setMemoryCategory(MemoryCategory.HIGH);
-        Glide.with(mContext).load(uris.get(position)).override(300,300).into(holder.item_image);
+
+        Uri uri = getItem(position);
+        //Glide.with(mContext).load(uri).override(100,100).into(holder.item_image);
+        Glide.with(mContext).load(uri).into(holder.item_image);
         return convertView;
     }
 

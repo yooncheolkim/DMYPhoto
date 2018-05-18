@@ -1,8 +1,12 @@
 package com.example.yoonc.dmyphoto;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.media.ExifInterface;
 import android.util.Log;
 
@@ -71,12 +75,9 @@ public class FilesInformations {
     private FilesInformations(Context c)
     {
         mContext = c;
-        //외부 공용 디렉토리 의 picture 디렉토리에대한 file 객체를 얻음
+        //외부 공용 디렉토리 의 DCIM 디렉토리에대한 path를 얻음.
         directoryFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        //절대 경로 string 값을 얻음
         folderPath = directoryFolder.getAbsolutePath();
-        //folderPath = folderPath+"/hackDay_test";
-        //File realPath = new File(folderPath);
 
         Log.d(LOGTAG,folderPath);
         files = directoryFolder.listFiles();
@@ -97,27 +98,57 @@ public class FilesInformations {
 
     //파일 date, url 가져오기
     private void getFilesInformations(){
-        Uri uri;
         InputStream in;
-        for(File f : files) {
-            //file f의 uri 가져오기
-            uri = Uri.fromFile(f);
-            try {
-                //uri
-                in = mContext.getContentResolver().openInputStream(uri);
-                ExifInterface exifInterface = new ExifInterface(in);
-                //이미지의 uri와 date 넘기기
-                Log.d(LOGTAG,"exif date : " +exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
-                Date date = new Date(exifInterface.getDateTime());
-                FileInformations FI = new FileInformations(uri,date);
-                filesInformations.add(FI);
-                in.close();
+        String[] projection1 = {MediaStore.Images.Media._ID};
+        //MediaStore.Images.Media.EXTERNAL_CONTENT_URI 이렇게 하면, CONTENT_URI 만 가져올수 있음...
+        //MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI 이렇게 해서 thumbnail uri 만 따로 가져와야함...
+        List<Date> dateList = new ArrayList<Date>();
+        Cursor cursor = mContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,projection1,null,null,"_id asc limit 100");
+        try{
+            if(cursor != null && cursor.moveToFirst()){
+                do {
+                    int idIndex = cursor.getColumnIndex(projection1[0]);
+                    long id = cursor.getLong(idIndex);
+
+                    Uri tempUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    in = mContext.getContentResolver().openInputStream(tempUri);
+                    ExifInterface exifInterface = new ExifInterface(in);
+                    Date date = new Date(exifInterface.getDateTime());
+                    dateList.add(date);
+                    in.close();
+                }while(cursor.moveToNext());
+            }else{
+                Log.d(LOGTAG,"cursor is empty!");
             }
-            catch (FileNotFoundException e){
-                Log.d(LOGTAG,"FIle not found exception!");}
-            catch (IOException e){Log.d(LOGTAG,"io exception!");}
+        }catch (FileNotFoundException e){
+            Log.d(LOGTAG,"FIle not found exception!");}
+        catch (IOException e){Log.d(LOGTAG,"io exception!");}
+        cursor.close();
+
+        List<Uri> thumbnailsList = new ArrayList<>();
+        String []projection2 = {MediaStore.Images.Thumbnails.DATA};
+        Cursor cursor2 = mContext.getContentResolver().query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,projection2,null,null,"_id asc limit 100");
+
+        if(cursor2 != null && cursor2.moveToFirst()){
+            do {
+                int thumbnailIndex = cursor2.getColumnIndex(projection2[0]);
+
+                String thumbnailPath = cursor2.getString(thumbnailIndex);
+                Uri thumbnailUri = Uri.parse(thumbnailPath);
+                thumbnailsList.add(thumbnailUri);
+            }while(cursor2.moveToNext());
+        }else{
+            Log.d(LOGTAG,"cursor is empty!");
+        }
+
+        cursor2.close();
+
+        for(int i = 0 ; i < thumbnailsList.size() ; i++){
+            FileInformations FI = new FileInformations(thumbnailsList.get(i),dateList.get(i));
+            filesInformations.add(FI);
         }
     }
+
 
 
     //목록 미리 만들어 놓는게 좋을까? pinch 할때마다 가져오는게 좋을까?
@@ -203,5 +234,13 @@ public class FilesInformations {
         }
         return datetime;
     }
+
+    public class ThumbnailUri{
+        Uri thumbnailUri;
+        public ThumbnailUri(Uri uri){
+            thumbnailUri = uri;
+        }
+    }
+
 
 }
