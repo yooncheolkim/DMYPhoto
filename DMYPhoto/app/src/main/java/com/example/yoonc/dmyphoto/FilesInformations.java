@@ -1,35 +1,25 @@
 package com.example.yoonc.dmyphoto;
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.media.ExifInterface;
 import android.util.Log;
 
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifImageDirectory;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -38,7 +28,6 @@ import java.util.TreeMap;
 
 //여기에 전체 file들의 정보를 가지고 있어야 겠당...
 //여기서 필터링 해서 imageAdapter 에 넘겨주기.
-//싱글톤으로 만드는게 좋을것 같다..
 public class FilesInformations {
     private String LOGTAG = "FIlesInformations LOG";
 
@@ -98,58 +87,50 @@ public class FilesInformations {
 
     //파일 date, url 가져오기
     private void getFilesInformations(){
-        InputStream in;
-        String[] projection1 = {MediaStore.Images.Media._ID};
-        //MediaStore.Images.Media.EXTERNAL_CONTENT_URI 이렇게 하면, CONTENT_URI 만 가져올수 있음...
-        //MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI 이렇게 해서 thumbnail uri 만 따로 가져와야함...
-        List<Date> dateList = new ArrayList<Date>();
-        Cursor cursor = mContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,projection1,null,null,"_id asc limit 100");
-        try{
-            if(cursor != null && cursor.moveToFirst()){
-                do {
-                    int idIndex = cursor.getColumnIndex(projection1[0]);
-                    long id = cursor.getLong(idIndex);
+        String[] projection = {MediaStore.Images.Media._ID
+                ,MediaStore.Images.Media.DATA
+                ,MediaStore.Images.Media.DISPLAY_NAME};
+        Cursor cursor = mContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,null,null,"_id asc limit 100");
 
-                    Uri tempUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    in = mContext.getContentResolver().openInputStream(tempUri);
-                    ExifInterface exifInterface = new ExifInterface(in);
-                    Date date = new Date(exifInterface.getDateTime());
-                    dateList.add(date);
-                    in.close();
-                }while(cursor.moveToNext());
-            }else{
-                Log.d(LOGTAG,"cursor is empty!");
+        if(cursor!= null && cursor.moveToFirst()){
+            int idColumnIndex = cursor.getColumnIndex(projection[0]);
+            int dataColumnIndex = cursor.getColumnIndex(projection[1]);
+            int displayNameColumnIndex = cursor.getColumnIndex(projection[2]);
+
+            while(cursor.moveToNext()){
+                String id = cursor.getString(idColumnIndex);
+                Uri thumnailUrl = getThumbnailUrl(id);
+                String displayName = cursor.getString(displayNameColumnIndex);
+                String fileUrl = cursor.getString(dataColumnIndex);
+                Date date = extractExifDateTime(fileUrl);
+                filesInformations.add(new FileInformations(thumnailUrl,date));
             }
-        }catch (FileNotFoundException e){
-            Log.d(LOGTAG,"FIle not found exception!");}
-        catch (IOException e){Log.d(LOGTAG,"io exception!");}
-        cursor.close();
-
-        List<Uri> thumbnailsList = new ArrayList<>();
-        String []projection2 = {MediaStore.Images.Thumbnails.DATA};
-        Cursor cursor2 = mContext.getContentResolver().query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,projection2,null,null,"_id asc limit 100");
-
-        if(cursor2 != null && cursor2.moveToFirst()){
-            do {
-                int thumbnailIndex = cursor2.getColumnIndex(projection2[0]);
-
-                String thumbnailPath = cursor2.getString(thumbnailIndex);
-                Uri thumbnailUri = Uri.parse(thumbnailPath);
-                thumbnailsList.add(thumbnailUri);
-            }while(cursor2.moveToNext());
-        }else{
-            Log.d(LOGTAG,"cursor is empty!");
-        }
-
-        cursor2.close();
-
-        for(int i = 0 ; i < thumbnailsList.size() ; i++){
-            FileInformations FI = new FileInformations(thumbnailsList.get(i),dateList.get(i));
-            filesInformations.add(FI);
         }
     }
 
-
+    private Uri getThumbnailUrl(String id){
+        Uri thumbnailUri = Uri.EMPTY;
+        String[] projection2 = {MediaStore.Images.Thumbnails.DATA};
+        Cursor thumbanilCursor = mContext.getContentResolver().query(
+                MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+                projection2,
+                MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
+                new String[]{id},
+                null);
+        if(thumbanilCursor == null){}
+        else if(thumbanilCursor.moveToFirst()){
+            int thumbnailColumnIndex = thumbanilCursor.getColumnIndex(projection2[0]);
+            String thumbnailPath = thumbanilCursor.getString(thumbnailColumnIndex);
+            thumbanilCursor.close();
+            thumbnailUri = Uri.parse(thumbnailPath);
+        }else{
+            MediaStore.Images.Thumbnails.getThumbnail(mContext.getContentResolver(), Long.parseLong(id), MediaStore.Images.Thumbnails.MINI_KIND, null);
+            thumbanilCursor.close();
+            thumbnailUri = getThumbnailUrl(id);
+        }
+        return thumbnailUri;
+    }
 
     //목록 미리 만들어 놓는게 좋을까? pinch 할때마다 가져오는게 좋을까?
     public void gruoping(){

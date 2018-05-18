@@ -7,24 +7,17 @@ import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.FloatMath;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,11 +28,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private static final String LOGTAG = "MAINACTIVITY";
     private static Context sContext;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_CODE = 1;
-    public static DMY currDMY = DMY.YEARLY;
+    public static DMY currDMY = DMY.DAILY;
     public static FilesInformations fi;
     public static ScrollView scrollView;
     public static int displayWidthSize;
     public static LinearLayout linearLayout;
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Log.d(LOGTAG,"onresume!");
+        fi.setIterator();
+        setScrollViewGridView();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,23 +73,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         else if(currDMY == DMY.YEARLY)
             iteratorKey = fi.iteratoryearlyKeys;
 
-
-
         while(iteratorKey.hasNext()) {
             GridViewWithHeaderAndFooter gridView = new GridViewWithHeaderAndFooter(this);
             gridView.setNumColumns(currDMY.getColumsNum());
-            gridView.setVerticalScrollBarEnabled(false);
-            gridView.setClickable(false);
-            gridView.setFocusable(false);
+            //gridView.setVerticalScrollBarEnabled(false);
+            //gridView.setClickable(false);
+            //gridView.setFocusable(false);
             //정렬된 날짜의 string을 가지고 있는 키
             String key = iteratorKey.next();
+
             //header 설정
             LayoutInflater layoutInflater = LayoutInflater.from(this);
-
             View headerView = layoutInflater.inflate(R.layout.layout_header,null,false);
             TextView headerText = (TextView)headerView.findViewById(R.id.text);
             headerText.setText(key);
-
             gridView.addHeaderView(headerView);
 
 
@@ -98,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             else if(currDMY == DMY.YEARLY) adapter.getIteratorFromFI(key,fi.groupingResultYearly.get(key));
             adapter.setItemWidth(getDeviceWidthSize(this));
             gridView.setAdapter(adapter);
-
-            //터치 이벤트 설정
 
             Log.d(LOGTAG,"adapter size = " + adapter.getCount());
 

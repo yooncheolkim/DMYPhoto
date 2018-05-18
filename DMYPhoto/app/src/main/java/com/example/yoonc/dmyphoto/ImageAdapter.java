@@ -1,39 +1,17 @@
 package com.example.yoonc.dmyphoto;
 
-import android.app.Activity;
-import android.app.VoiceInteractor;
-import android.content.ContentUris;
+
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
-import android.support.media.ExifInterface;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.MemoryCategory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
@@ -42,25 +20,20 @@ import in.srain.cube.views.GridViewWithHeaderAndFooter;
  * Created by yoonc on 2018-04-29.
  */
 
-//이미지 url, 각 이미지 날짜, orientation 가져와야함.
-    // 저장되어 있는 이미지 url 를 불러와서, 년,월,일로 나누기
-
-
+//thumbnail uri, date string
 public class ImageAdapter extends BaseAdapter {
     String LOGTAG = "imageadapter LOG";
 
 
     private Context mContext;
-    //외부 저장소 picture directory
     FilesInformations fi = FilesInformations.getInstance();
 
     //날짜를 가질 header
     String header;
-    //날짜 이미지의 uri들
+    //thumbnail Uris
     List<Uri> uris = new ArrayList<>();
 
     int itemWidth;
-
 
     public ImageAdapter(Context c){
         mContext = c;
@@ -79,6 +52,10 @@ public class ImageAdapter extends BaseAdapter {
         return 0;
     }
 
+
+    //왜 이미지가 그려지지 않는걸까...??
+    //글라이드 버전 높여보기...
+    //heap??gc 코드 빼고 다시 해보자...
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
@@ -104,8 +81,8 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         Uri uri = getItem(position);
-        //Glide.with(mContext).load(uri).override(100,100).into(holder.item_image);
-        Glide.with(mContext).load(uri).into(holder.item_image);
+        holder.item_image.setImageURI(uri);
+
         return convertView;
     }
 
