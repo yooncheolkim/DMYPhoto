@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             gridView.addHeaderView(headerView);
 
-            //adapter - gridview 바인딩
+
             ImageAdapter adapter = new ImageAdapter(this);
             if(currDMY == DMY.DAILY) adapter.getIteratorFromFI(key,fi.groupingResultDaily.get(key));
             else if(currDMY == DMY.MONTHLY) adapter.getIteratorFromFI(key,fi.groupingResultMonthly.get(key));
