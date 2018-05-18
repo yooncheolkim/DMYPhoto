@@ -8,3 +8,4 @@
 ## To do
 - Gridview Item에 image가 제대로 맞게 하기..
 - Glide로 이미지 로드가 왜 안될까..?(일단 SetImageUri로 했음)
+- Sticky Gridview로 바꾸기.
