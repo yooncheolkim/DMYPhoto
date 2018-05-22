@@ -26,7 +26,7 @@ public class ImageAdapter extends BaseAdapter {
 
 
     private Context mContext;
-    FilesInformations fi = FilesInformations.getInstance();
+    FilesInformations fi = FilesInformations.getInstance(mContext);
 
     //날짜를 가질 header
     String header;
@@ -53,9 +53,9 @@ public class ImageAdapter extends BaseAdapter {
     }
 
 
-    //왜 이미지가 그려지지 않는걸까...??
+    //왜 이미지가 해보자... 그려지지 않는걸까...??
     //글라이드 버전 높여보기...
-    //heap??gc 코드 빼고 다시 해보자...
+    //heap??gc 코드 빼고 다시
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
@@ -67,7 +67,7 @@ public class ImageAdapter extends BaseAdapter {
 
             holder.item_image = (ImageView)convertView.findViewById(R.id.iv);
 
-            GridViewWithHeaderAndFooter.LayoutParams params = new GridViewWithHeaderAndFooter.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+            GridViewWithHeaderAndFooter.LayoutParams params = new GridViewWithHeaderAndFooter.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
             convertView.setLayoutParams(params);
 
             convertView.setPadding(1,1,1,1);

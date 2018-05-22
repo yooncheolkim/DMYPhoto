@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         sContext = getApplicationContext();
         scrollView = (ScrollView)findViewById(R.id.scrollView);
         checkPermissions();
-        fi = FilesInformations.getInstance();
+        fi = FilesInformations.getInstance(sContext);
         displayWidthSize = getDeviceWidthSize(this);
 
         linearLayout = new LinearLayout(sContext);

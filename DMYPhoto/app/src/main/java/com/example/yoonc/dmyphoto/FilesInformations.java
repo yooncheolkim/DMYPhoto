@@ -37,7 +37,7 @@ public class FilesInformations {
         public FileInformations(Uri u, Date d){uri = u; date = d;}
     }
 
-    public Context mContext;
+    public static Context mContext;
     private File directoryFolder;
     //directory path
     private String folderPath;
@@ -77,11 +77,16 @@ public class FilesInformations {
     }
 
     //싱글톤을 위함
-    public static FilesInformations getInstance(){
+    //MainActivity.context를 가져와 사용할 경우,
+    // mainactivity의 lifecycle이 끝날 경우, 참조를 하고 있어 메모리에서 날아가지 않게됨.
+    // http://mrgamza.tistory.com/196
+    //수정완료
+    public static FilesInformations getInstance(Context context){
+        mContext = context;
         return LazyHolder.INSTANCE;
     }
     private static class LazyHolder{
-        private static final FilesInformations INSTANCE = new FilesInformations(MainActivity.getAppContext());
+        private static final FilesInformations INSTANCE = new FilesInformations(mContext.getApplicationContext());
     }
 
 
