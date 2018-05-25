@@ -8,6 +8,7 @@
 
 ## To do
 - 완료
+- 다음에는 GridView 말고,
 
 
 ## reference
@@ -16,3 +17,7 @@
 - [ExifInterface](https://developers-kr.googleblog.com/2017/01/introducing-the-exifinterface-support-library.html)
 - [HashMap sorting](http://ithub.tistory.com/34)
 - [ViewHolder pattern](http://www.kmshack.kr/2013/09/android-%EC%9C%A0%EC%97%B0%EC%84%B1-%EC%9E%88%EB%8A%94-viewholder-pattern/)
+
+## OpenSource
+- [AStickyHeader](https://github.com/DWorkS/AStickyHeader)
+- [Extract Exif data](https://github.com/drewnoakes/metadata-extractor)
