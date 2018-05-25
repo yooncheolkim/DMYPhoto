@@ -4,126 +4,60 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Point;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.GridLayout;
+import android.widget.GridView;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import in.srain.cube.views.GridViewWithHeaderAndFooter;
+import dev.dworks.libs.astickyheader.SectionedGridAdapter;
+import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter;
+
+import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter;
+import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter.Section;
+
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
-    private static final String LOGTAG = "MAINACTIVITY";
-    private static Context sContext;
+    private static final String LOGTAG = "MainActivity";
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_CODE = 1;
-    public static DMY currDMY = DMY.DAILY;
-    public static FilesInformations fi;
-    public static ScrollView scrollView;
-    public static int displayWidthSize;
-    public static LinearLayout linearLayout;
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-        Log.d(LOGTAG,"onresume!");
-        fi.setIterator();
-        setScrollViewGridView();
-    }
+    private GridView gridView;
+    private ImageAdapter mAdapter;
+    private ArrayList<Section> sections = new ArrayList<Section>();
+    private DMY currDMY = DMY.DAILY;
+    FilesInformations fi;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sContext = getApplicationContext();
-        scrollView = (ScrollView)findViewById(R.id.scrollView);
         checkPermissions();
-        fi = FilesInformations.getInstance(sContext);
-        displayWidthSize = getDeviceWidthSize(this);
-
-        linearLayout = new LinearLayout(sContext);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-        linearLayout.setLayoutParams(params);
-        scrollView.addView(linearLayout);
-        setScrollViewGridView();
-    }
-    public static Context getAppContext(){
-        return sContext;
     }
 
-
-    public void setScrollViewGridView(){
-        Iterator<String> iteratorKey = fi.iteratordailyKeys;
-
-        if(currDMY == DMY.DAILY)
-            iteratorKey = fi.iteratordailyKeys;
-        else if(currDMY == DMY.MONTHLY)
-            iteratorKey = fi.iteratormonthlyKeys;
-        else if(currDMY == DMY.YEARLY)
-            iteratorKey = fi.iteratoryearlyKeys;
-
-        while(iteratorKey.hasNext()) {
-            GridViewWithHeaderAndFooter gridView = new GridViewWithHeaderAndFooter(this);
-            gridView.setNumColumns(currDMY.getColumsNum());
-            //gridView.setVerticalScrollBarEnabled(false);
-            //gridView.setClickable(false);
-            //gridView.setFocusable(false);
-            //정렬된 날짜의 string을 가지고 있는 키
-            String key = iteratorKey.next();
-
-            //header 설정
-            LayoutInflater layoutInflater = LayoutInflater.from(this);
-            View headerView = layoutInflater.inflate(R.layout.layout_header,null,false);
-            TextView headerText = (TextView)headerView.findViewById(R.id.text);
-            headerText.setText(key);
-            gridView.addHeaderView(headerView);
-
-
-            ImageAdapter adapter = new ImageAdapter(this);
-            if(currDMY == DMY.DAILY) adapter.getIteratorFromFI(key,fi.groupingResultDaily.get(key));
-            else if(currDMY == DMY.MONTHLY) adapter.getIteratorFromFI(key,fi.groupingResultMonthly.get(key));
-            else if(currDMY == DMY.YEARLY) adapter.getIteratorFromFI(key,fi.groupingResultYearly.get(key));
-            adapter.setItemWidth(getDeviceWidthSize(this));
-            gridView.setAdapter(adapter);
-
-            Log.d(LOGTAG,"adapter size = " + adapter.getCount());
-
-            int imageHeight = (displayWidthSize - (currDMY.getColumsNum() +1))/currDMY.getColumsNum();
-            //이미지의 열 + padding
-            int totalheight = imageHeight *(adapter.getCount() / currDMY.getColumsNum()) + (1*adapter.getCount() / currDMY.getColumsNum() +1);
-            if(adapter.getCount() % currDMY.getColumsNum() != 0) totalheight += imageHeight;
-            headerText.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            totalheight += headerText.getMeasuredHeight();
-
-            Log.d(LOGTAG,"totalheight = " + totalheight);
-
-            //scrollview안에 있는 LinearLayout에 gridView 넣기
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    totalheight);
-
-            linearLayout.addView(gridView,params);
+    /**
+     * checking  permissions at Runtime.
+     */
+    private void checkPermissions() {
+        final String[] requiredPermissions = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+        };
+        final List<String> neededPermissions = new ArrayList<>();
+        for (final String permission : requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                    permission) != PackageManager.PERMISSION_GRANTED) {
+                neededPermissions.add(permission);
+                //퍼미션 허락 되면, init 시작.
+            }
         }
-    }
-
-
-
-    public static int getDeviceWidthSize(Activity activity){
-        Display display = activity.getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size.x;
+        if (!neededPermissions.isEmpty()) {
+            requestPermissions(neededPermissions.toArray(new String[]{}),
+                    MY_PERMISSIONS_REQUEST_ACCESS_CODE);
+        }
+        init();
     }
 
     @Override
@@ -138,29 +72,29 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         }
     }
-    /**
-     * checking  permissions at Runtime.
-     */
-    private void checkPermissions() {
-        final String[] requiredPermissions = {
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-        };
-        final List<String> neededPermissions = new ArrayList<>();
-        for (final String permission : requiredPermissions) {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                    permission) != PackageManager.PERMISSION_GRANTED) {
-                neededPermissions.add(permission);
-            }
+
+    private void init()
+    {
+        fi = FilesInformations.getInstance(this);
+        gridView = (GridView)findViewById(R.id.grid);
+        gridView.setNumColumns(currDMY.getColumsNum());
+        mAdapter = new ImageAdapter(this);
+        mAdapter.getHeaderNamesAndPositions(currDMY);
+
+        for(int i = 0 ; i < mAdapter.mHeaderPositions.size()-1 ; i++){
+            sections.add(new Section(mAdapter.mHeaderPositions.get(i),mAdapter.mHeaderNames.get(i)));
         }
-        if (!neededPermissions.isEmpty()) {
-            requestPermissions(neededPermissions.toArray(new String[]{}),
-                    MY_PERMISSIONS_REQUEST_ACCESS_CODE);
-        }
+        SimpleSectionedGridAdapter simpleSectionedGridAdapter = new SimpleSectionedGridAdapter(this,mAdapter,
+                R.layout.grid_item_header,R.id.header_layout,R.id.header);
+        simpleSectionedGridAdapter.setGridView(gridView);
+        simpleSectionedGridAdapter.setSections(sections.toArray(new Section[0]));
+        gridView.setAdapter(simpleSectionedGridAdapter);
+
     }
 
 
 
-    /* About Pinch in out */
+        /* About Pinch in out */
 
     public void setZoomIn(){
         fi.setIterator();
@@ -168,13 +102,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             case YEARLY: break;
             case MONTHLY:
                 currDMY = DMY.YEARLY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
+                mAdapter.getHeaderNamesAndPositions(currDMY);
+                gridView.removeAllViewsInLayout();
+                sections.clear();
+                //gridView.removeAllViews();
+                init();
                 break;
             case DAILY:
                 currDMY = DMY.MONTHLY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
+                mAdapter.getHeaderNamesAndPositions(currDMY);
+                gridView.removeAllViewsInLayout();
+                sections.clear();
+                //gridView.removeAllViews();
+                init();
                 break;
         }
     }
@@ -185,13 +125,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 break;
             case MONTHLY:
                 currDMY = DMY.DAILY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
+                mAdapter.getHeaderNamesAndPositions(currDMY);
+                gridView.removeAllViewsInLayout();
+                sections.clear();
+                //gridView.removeAllViews();
+                init();
                 break;
             case YEARLY:
                 currDMY = DMY.MONTHLY;
-                linearLayout.removeAllViews();
-                setScrollViewGridView();
+                mAdapter.getHeaderNamesAndPositions(currDMY);
+                gridView.removeAllViewsInLayout();
+                sections.clear();
+                //gridView.removeAllViews();
+                init();
                 break;
         }
     }

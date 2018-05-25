@@ -11,6 +11,7 @@ import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifImageDirectory;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,16 +39,9 @@ public class FilesInformations {
     }
 
     public static Context mContext;
-    private File directoryFolder;
-    //directory path
-    private String folderPath;
-
-    //picture directory에 있는 이미지에 대한 file 객체
-    private File[] files;
-    private String filePath;
 
     //이미지 파일 전체에 대한 정보.
-    private List<FileInformations> filesInformations = new ArrayList<>();
+    public List<FileInformations> filesInformations = new ArrayList<>();
 
     //조건에 대한 파일 정보를 그룹핑
     //날짜에 따라 uri를 그룹핑함.
@@ -60,20 +54,58 @@ public class FilesInformations {
     public Iterator<String> iteratormonthlyKeys;
     public Iterator<String> iteratoryearlyKeys;
 
+    //각 헤더의 string 값
+    public ArrayList<String> mHeaderNames_daily = new ArrayList<>();
+    public ArrayList<String> mHeaderNames_monthly = new ArrayList<>();
+    public ArrayList<String> mHeaderNames_yearly = new ArrayList<>();
+
+    //각 헤더가 그리드뷰에서 가질 위치
+    public ArrayList<Integer> mHeaderPositions_daily = new ArrayList<>();
+    public ArrayList<Integer> mHeaderPositions_monthly = new ArrayList<>();
+    public ArrayList<Integer> mHeaderPositions_yearly = new ArrayList<>();
+
+
+    private void makeHeaderAndPosition(){
+        mHeaderPositions_daily.add(0);
+        int cnt = 0;
+
+        while(iteratordailyKeys.hasNext()){
+            String key = iteratordailyKeys.next();
+            mHeaderNames_daily.add(key);
+
+            cnt += groupingResultDaily.get(key).size();
+            mHeaderPositions_daily.add(cnt);
+        }
+
+        cnt = 0;
+        mHeaderPositions_monthly.add(0);
+        while(iteratormonthlyKeys.hasNext()){
+            String key = iteratormonthlyKeys.next();
+            mHeaderNames_monthly.add(key);
+
+            cnt += groupingResultMonthly.get(key).size();
+            mHeaderPositions_monthly.add(cnt);
+        }
+
+        cnt = 0;
+        mHeaderPositions_yearly.add(0);
+        while(iteratoryearlyKeys.hasNext()){
+            String key = iteratoryearlyKeys.next();
+            mHeaderNames_yearly.add(key);
+
+            cnt += groupingResultYearly.get(key).size();
+            mHeaderPositions_yearly.add(cnt);
+        }
+        setIterator();
+    }
 
     private FilesInformations(Context c)
     {
         mContext = c;
         //외부 공용 디렉토리 의 DCIM 디렉토리에대한 path를 얻음.
-        directoryFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        folderPath = directoryFolder.getAbsolutePath();
-
-        Log.d(LOGTAG,folderPath);
-        files = directoryFolder.listFiles();
-
-        Log.d(LOGTAG, "files length : " + files.length);
         getFilesInformations();
         gruoping();
+        makeHeaderAndPosition();
     }
 
     //싱글톤을 위함
@@ -219,13 +251,6 @@ public class FilesInformations {
             Log.w("exif", "Unable to extract EXIF metadata from image at " + imagePath, e);
         }
         return datetime;
-    }
-
-    public class ThumbnailUri{
-        Uri thumbnailUri;
-        public ThumbnailUri(Uri uri){
-            thumbnailUri = uri;
-        }
     }
 
 
