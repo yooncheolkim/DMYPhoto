@@ -8,7 +8,7 @@
 
 ## To do
 - 완료
-- 다음에는 GridView 말고,
+- 다음에는 GridView 말고, RecyclerView 로 하자.
 
 
 ## reference
