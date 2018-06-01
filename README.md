@@ -7,7 +7,7 @@
 - ExifInterface로 Date 가져오기
 
 ## To do
-- 완료
+- pinch in/out , gridview 다시 그려줄때, 이미지가 제대로 나오지 않는 오류... (스크롤 내렸다가 다시 올리면 정상으로 돌아옴..) -> 무슨 문제인지..
 - 다음에는 GridView 말고, RecyclerView 로 하자.
 
 
