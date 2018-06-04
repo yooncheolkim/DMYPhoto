@@ -23,5 +23,4 @@
 - [Extract Exif data](https://github.com/drewnoakes/metadata-extractor)
 
 
-
-![screenshot_20180603-161545](https://user-images.githubusercontent.com/23315291/40909166-e290266e-6823-11e8-8a6c-56645f620fab.png)
+<center><img src="./example.png" width="400" height="600"></center>
