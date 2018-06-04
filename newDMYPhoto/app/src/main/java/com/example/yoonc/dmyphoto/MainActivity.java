@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.GridLayout;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +22,13 @@ import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter;
 
 import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter;
 import dev.dworks.libs.astickyheader.SimpleSectionedGridAdapter.Section;
+import dev.dworks.libs.astickyheader.ui.PinnedSectionGridView;
 
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
     private static final String LOGTAG = "MainActivity";
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_CODE = 1;
-    private GridView gridView;
-    private ImageAdapter mAdapter;
+    private PinnedSectionGridView gridView;
     private ArrayList<Section> sections = new ArrayList<Section>();
     private DMY currDMY = DMY.DAILY;
     FilesInformations fi;
@@ -76,9 +77,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private void init()
     {
         fi = FilesInformations.getInstance(this);
-        gridView = (GridView)findViewById(R.id.grid);
+        gridView = (PinnedSectionGridView) findViewById(R.id.grid);
         gridView.setNumColumns(currDMY.getColumsNum());
-        mAdapter = new ImageAdapter(this);
+        ImageAdapter mAdapter = new ImageAdapter(this);
         mAdapter.getHeaderNamesAndPositions(currDMY);
 
         for(int i = 0 ; i < mAdapter.mHeaderPositions.size()-1 ; i++){
@@ -89,11 +90,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         simpleSectionedGridAdapter.setGridView(gridView);
         simpleSectionedGridAdapter.setSections(sections.toArray(new Section[0]));
         gridView.setAdapter(simpleSectionedGridAdapter);
-
     }
-
-
-
         /* About Pinch in out */
 
     public void setZoomIn(){
@@ -102,18 +99,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             case YEARLY: break;
             case MONTHLY:
                 currDMY = DMY.YEARLY;
-                mAdapter.getHeaderNamesAndPositions(currDMY);
-                gridView.removeAllViewsInLayout();
                 sections.clear();
-                //gridView.removeAllViews();
                 init();
                 break;
             case DAILY:
                 currDMY = DMY.MONTHLY;
-                mAdapter.getHeaderNamesAndPositions(currDMY);
-                gridView.removeAllViewsInLayout();
                 sections.clear();
-                //gridView.removeAllViews();
                 init();
                 break;
         }
@@ -125,18 +116,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 break;
             case MONTHLY:
                 currDMY = DMY.DAILY;
-                mAdapter.getHeaderNamesAndPositions(currDMY);
-                gridView.removeAllViewsInLayout();
                 sections.clear();
-                //gridView.removeAllViews();
                 init();
                 break;
             case YEARLY:
                 currDMY = DMY.MONTHLY;
-                mAdapter.getHeaderNamesAndPositions(currDMY);
-                gridView.removeAllViewsInLayout();
                 sections.clear();
-                //gridView.removeAllViews();
                 init();
                 break;
         }

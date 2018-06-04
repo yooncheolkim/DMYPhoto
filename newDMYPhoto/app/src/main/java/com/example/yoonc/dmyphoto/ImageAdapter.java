@@ -8,11 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import dev.dworks.libs.astickyheader.ui.SquareImageView;
 
 /**
  * Created by yoonc on 2018-05-25.
@@ -51,8 +54,8 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return null;
+    public Object getItem(int position) {
+        return fi.filesInformations.get(position);
     }
 
     @Override
@@ -63,7 +66,7 @@ public class ImageAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View converView, ViewGroup parent) {
         ImageView image;
-        if(converView == null){
+        if(converView == null) {
             converView = mInfalter.inflate(R.layout.grid_item,parent,false);
         }
         image = ViewHolder.get(converView,R.id.image);

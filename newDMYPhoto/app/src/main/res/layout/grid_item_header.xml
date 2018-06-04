@@ -14,7 +14,6 @@
         android:textAllCaps="true"
         android:textColor="@android:color/black"
         android:layout_margin="0dp"
-        android:textIsSelectable="false"
-        />
+        android:textIsSelectable="false" />
 
 </dev.dworks.libs.astickyheader.ui.HeaderLayout>
